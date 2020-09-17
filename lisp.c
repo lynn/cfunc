@@ -69,9 +69,15 @@ Value *eval(Value *exp, Environment *env) {
         /* Apply a function. */
         f = car(exp); tail = cdr(exp);
         if (IS_KEYWORD(f, "if")) {
-            return eval(from_bool(eval(car(tail), env))
-                        ? car(cdr(tail))
-                        : car(cdr(cdr(tail))), env);
+            bool b = from_bool(eval(car(tail), env));
+            return eval(b ? car(cdr(tail)) : car(cdr(cdr(tail))), env);
+        } else if (IS_KEYWORD(f, "cond")) {
+            while (!is_nil(tail)) {
+                bool b = from_bool(eval(car(car(tail)), env));
+                if (b) return eval(car(cdr(car(tail))), env);
+                tail = cdr(tail);
+            }
+            return make_nil();
         } else if (IS_KEYWORD(f, "lambda")) {
             return make_lambda(car(tail), car(cdr(tail)), env);
         } else if (IS_KEYWORD(f, "quote")) {
