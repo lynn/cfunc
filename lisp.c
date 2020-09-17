@@ -43,11 +43,37 @@ Value *builtin_plus(Value *args) {
     return make_number(sum);
 }
 
+Value *builtin_minus(Value *args) {
+    double sum = 0.0;
+    bool first = true;
+    while (!is_nil(args)) {
+        assert(car(args)->t == NUMBER);
+        double v = car(args)->v.number_value;
+        sum = first ? v : sum - v;
+        first = false;
+        args = cdr(args);
+    }
+    return make_number(sum);
+}
+
 Value *builtin_times(Value *args) {
     double product = 1.0;
     while (!is_nil(args)) {
         assert(car(args)->t == NUMBER);
         product *= car(args)->v.number_value;
+        args = cdr(args);
+    }
+    return make_number(product);
+}
+
+Value *builtin_divide(Value *args) {
+    double product = 1.0;
+    bool first = true;
+    while (!is_nil(args)) {
+        assert(car(args)->t == NUMBER);
+        double v = car(args)->v.number_value;
+        product = first ? v : product / v;
+        first = false;
         args = cdr(args);
     }
     return make_number(product);
@@ -67,7 +93,9 @@ Environment *make_global_env() {
     define_env(e, "cdr", make_builtin(builtin_cdr));
     define_env(e, "cons", make_builtin(builtin_cons));
     define_env(e, "+", make_builtin(builtin_plus));
+    define_env(e, "-", make_builtin(builtin_minus));
     define_env(e, "*", make_builtin(builtin_times));
+    define_env(e, "/", make_builtin(builtin_divide));
     define_env(e, "=", make_builtin(builtin_number_equal));
     return e;
 }
