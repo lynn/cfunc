@@ -73,7 +73,7 @@ void sweep() {
     }
     heap_index = 0;
     max_heap_index = max_marked;
-    printf("Sweeped heap down from %d to %d values.\n", old_heap_values, heap_values);
+    printf("Swept heap down from %d to %d values.\n", old_heap_values, heap_values);
 }
 
 void mark_and_sweep() {

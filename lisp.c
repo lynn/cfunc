@@ -88,6 +88,23 @@ Value *builtin_divide(Value *args) {
     return make_number(product);
 }
 
+#define BuiltinCompare(name, op) \
+    Value *name(Value *args) { \
+        assert(car(args)->t == NUMBER); \
+        assert(car(cdr(args))->t == NUMBER); \
+        bool equal = car(args)->v.number_value op car(cdr(args))->v.number_value; \
+        return make_bool(equal); \
+    }
+
+BuiltinCompare(builtin_number_eq, ==)
+BuiltinCompare(builtin_number_ne, !=)
+BuiltinCompare(builtin_number_lt, <)
+BuiltinCompare(builtin_number_gt, >)
+BuiltinCompare(builtin_number_le, <=)
+BuiltinCompare(builtin_number_ge, >=)
+
+#undef BuiltinCompare
+
 Value *builtin_number_equal(Value *args) {
     assert(car(args)->t == NUMBER);
     assert(car(cdr(args))->t == NUMBER);
@@ -107,7 +124,12 @@ Environment *make_global_env() {
     define_env(e, "-", make_builtin(builtin_minus));
     define_env(e, "*", make_builtin(builtin_times));
     define_env(e, "/", make_builtin(builtin_divide));
-    define_env(e, "=", make_builtin(builtin_number_equal));
+    define_env(e, "=", make_builtin(builtin_number_eq));
+    define_env(e, "!=", make_builtin(builtin_number_ne));
+    define_env(e, "<", make_builtin(builtin_number_lt));
+    define_env(e, ">", make_builtin(builtin_number_gt));
+    define_env(e, "<=", make_builtin(builtin_number_le));
+    define_env(e, ">=", make_builtin(builtin_number_ge));
     return e;
 }
 
@@ -153,9 +175,12 @@ Value *eval(Value *exp, Environment *env) {
                         : car(cdr(cdr(tail))), env);
         } else if (IS_KEYWORD(f, "lambda")) {
             return make_lambda(car(tail), car(cdr(tail)), env);
+        } else if (IS_KEYWORD(f, "quote")) {
+            return car(tail);
         } else if (IS_KEYWORD(f, "define")) {
+            char *key = car(tail)->v.symbol_value;
             Value *val = eval(car(cdr(tail)), env);
-            define_env(env, car(tail)->v.symbol_value, val);
+            define_env(env, key, val);
             return make_nil();
         } else {
             Value *fe = eval(f, env);
