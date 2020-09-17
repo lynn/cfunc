@@ -30,10 +30,6 @@ Value *new_value() {
         max_heap_index = heap_index;
     heap_values++;
     // printf("%d\n", heap_values);
-    if (heap_values >= 50000) {
-        mark_and_sweep();
-    }
-
     return val;
 }
 

@@ -6,111 +6,7 @@
 #include "parse.h"
 #include "env.h"
 #include "gc.h"
-
-bool from_bool(Value *x) { assert(x->t == BOOL); return x->v.bool_value; }
-bool is_nil(Value *x) { assert(x->t == PAIR); return x->v.pair_value == NULL; }
-Value *car(Value *x) { assert(x->t == PAIR); return x->v.pair_value->fst; }
-Value *cdr(Value *x) { assert(x->t == PAIR); return x->v.pair_value->snd; }
-
-Value *builtin_begin(Value *args) {
-    // The args have all been evaluated in order.
-    // Just return the final one:
-    while (!is_nil(cdr(args))) args = cdr(args);
-    return car(args);
-}
-
-Value *builtin_car(Value *args) {
-    // Return the car of the first argument.
-    return car(car(args));
-}
-
-Value *builtin_cdr(Value *args) {
-    // Return the cdr of the first argument.
-    return cdr(car(args));
-}
-
-Value *builtin_cons(Value *args) {
-    return make_pair(car(args), car(cdr(args)));
-}
-
-Value *builtin_is_nil(Value *args) {
-    Value *x = car(args);
-    return make_bool(x->t == PAIR && x->v.pair_value == NULL);
-}
-
-Value *builtin_list(Value *args) {
-    return args;
-}
-
-Value *builtin_plus(Value *args) {
-    double sum = 0.0;
-    while (!is_nil(args)) {
-        assert(car(args)->t == NUMBER);
-        sum += car(args)->v.number_value;
-        args = cdr(args);
-    }
-    return make_number(sum);
-}
-
-Value *builtin_minus(Value *args) {
-    double sum = 0.0;
-    bool first = true;
-    while (!is_nil(args)) {
-        assert(car(args)->t == NUMBER);
-        double v = car(args)->v.number_value;
-        sum = first ? v : sum - v;
-        first = false;
-        args = cdr(args);
-    }
-    return make_number(sum);
-}
-
-Value *builtin_times(Value *args) {
-    double product = 1.0;
-    while (!is_nil(args)) {
-        assert(car(args)->t == NUMBER);
-        product *= car(args)->v.number_value;
-        args = cdr(args);
-    }
-    return make_number(product);
-}
-
-Value *builtin_divide(Value *args) {
-    double product = 1.0;
-    bool first = true;
-    while (!is_nil(args)) {
-        assert(car(args)->t == NUMBER);
-        double v = car(args)->v.number_value;
-        product = first ? v : product / v;
-        first = false;
-        args = cdr(args);
-    }
-    return make_number(product);
-}
-
-#define BuiltinCompare(name, op) \
-    Value *name(Value *args) { \
-        assert(car(args)->t == NUMBER); \
-        assert(car(cdr(args))->t == NUMBER); \
-        bool equal = car(args)->v.number_value op car(cdr(args))->v.number_value; \
-        return make_bool(equal); \
-    }
-
-BuiltinCompare(builtin_number_eq, ==)
-BuiltinCompare(builtin_number_ne, !=)
-BuiltinCompare(builtin_number_lt, <)
-BuiltinCompare(builtin_number_gt, >)
-BuiltinCompare(builtin_number_le, <=)
-BuiltinCompare(builtin_number_ge, >=)
-
-#undef BuiltinCompare
-
-Value *builtin_number_equal(Value *args) {
-    assert(car(args)->t == NUMBER);
-    assert(car(cdr(args))->t == NUMBER);
-    bool equal = car(args)->v.number_value == car(cdr(args))->v.number_value;
-    return make_bool(equal);
-}
+#include "builtin.h"
 
 Environment *make_global_env() {
     Environment *e = make_env(NULL);
@@ -130,6 +26,9 @@ Environment *make_global_env() {
     define_env(e, ">", make_builtin(builtin_number_gt));
     define_env(e, "<=", make_builtin(builtin_number_le));
     define_env(e, ">=", make_builtin(builtin_number_ge));
+    define_env(e, "string-cat", make_builtin(builtin_string_cat));
+    define_env(e, "string-length", make_builtin(builtin_string_length));
+    define_env(e, "string-index", make_builtin(builtin_string_index));
     return e;
 }
 
@@ -215,6 +114,7 @@ Value *map_eval(Value *exp, Environment *env) {
 
 int main(int argc, char **argv) {
     global_environment = make_global_env();
+    printf("sizeof(Value) = %lu\n", sizeof(Value));
     char *buffer = 0;
     long length;
     FILE *f = fopen(argv[1], "rb"); if (!f) exit(1);
@@ -225,8 +125,9 @@ int main(int argc, char **argv) {
     fclose(f);
     Value *code = parse_value(buffer, NULL);
     print_value(code, true); puts("");
+    // Stick it to the environment so it doesn't get GC'ed.
+    define_env(global_environment, "___code", code);
     print_value(eval(code, global_environment), true); puts("");
-    printf("Mark and sweep... %p\n", global_environment);
     mark_and_sweep();
     puts("Done.");
     destroy_env(global_environment);
