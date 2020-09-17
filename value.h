@@ -7,6 +7,12 @@ typedef struct Value Value;
 
 #include "env.h"
 
+static const int HEAP_SIZE = 100000;
+Value *heap[HEAP_SIZE];
+int heap_index;
+int max_heap_index;
+int heap_values;
+
 typedef struct Pair {
     Value *fst;
     Value *snd;
@@ -20,6 +26,7 @@ typedef struct Lambda {
 
 struct Value {
     Type t;
+    bool marked;
     union {
         bool bool_value;  // #t or #f
         double number_value;
@@ -30,8 +37,7 @@ struct Value {
     } v;
 };
 
-void init_heap();
-void destroy_heap();
+void free_value(Value *val);
 Value *make_nil();
 Value *make_bool(bool x);
 Value *make_number(double x);

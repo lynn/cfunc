@@ -3,9 +3,13 @@
 #include <stdio.h>
 #include <string.h>
 #include "value.h"
+#include "env.h"
+
+Environment *global_environment;
 
 Environment *make_env(Environment *parent) {
     Environment *env = malloc(sizeof(Environment));
+    env->marked = false;
     env->entries = 0;
     env->size = 8;
     env->table = (Entry *) malloc(sizeof(Entry) * env->size);
@@ -78,3 +82,4 @@ void merge_env(Environment *dst, Environment *src) {
     for (i = 0; i < src->entries; i++)
         define_env(dst, src->table[i].key, src->table[i].value);
 }
+

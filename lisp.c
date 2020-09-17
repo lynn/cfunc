@@ -5,26 +5,12 @@
 #include "show.h"
 #include "parse.h"
 #include "env.h"
+#include "gc.h"
 
-bool from_bool(Value *x) {
-    assert(x->t == BOOL);
-    return x->v.bool_value;
-}
-
-bool is_nil(Value *x) {
-    assert(x->t == PAIR);
-    return x->v.pair_value == NULL;
-}
-
-Value *car(Value *x) {
-    assert(x->t == PAIR);
-    return x->v.pair_value->fst;
-}
-
-Value *cdr(Value *x) {
-    assert(x->t == PAIR);
-    return x->v.pair_value->snd;
-}
+bool from_bool(Value *x) { assert(x->t == BOOL); return x->v.bool_value; }
+bool is_nil(Value *x) { assert(x->t == PAIR); return x->v.pair_value == NULL; }
+Value *car(Value *x) { assert(x->t == PAIR); return x->v.pair_value->fst; }
+Value *cdr(Value *x) { assert(x->t == PAIR); return x->v.pair_value->snd; }
 
 Value *builtin_begin(Value *args) {
     // The args have all been evaluated in order.
@@ -138,8 +124,10 @@ Value *eval(Value *exp, Environment *env) {
                 assert(tail->t == PAIR);
                 return (*fe->v.builtin_value)(map_eval(tail, env));
             } else if (fe->t == LAMBDA) {
-                return eval(fe->v.lambda_value->body,
-                            lambda_env(fe->v.lambda_value, map_eval(tail, env), env));
+                Environment *lenv = lambda_env(fe->v.lambda_value, map_eval(tail, env), env);
+                Value *result = eval(fe->v.lambda_value->body, lenv);
+                destroy_env(lenv);
+                return result;
             } else {
                 printf("Tried to call non-function: ");
                 print_value(fe, true); puts("");
@@ -162,13 +150,15 @@ Value *map_eval(Value *exp, Environment *env) {
 }
 
 int main(int argc, char **argv) {
-    init_heap();
-    Environment *global = make_global_env();
+    global_environment = make_global_env();
     // Value *code = parse_value("((lambda (x) (+ x x)) 5)", NULL);
     // Value *code = parse_value("(begin (define fac (lambda (x) (if (= x 0) 1 (* x (fac (+ x -1)))))) (fac 7))", NULL);
     Value *code = parse_value(argv[1], NULL);
     print_value(code, true); puts("");
-    print_value(eval(code, global), true); puts("");
-    destroy_heap();
+    print_value(eval(code, global_environment), true); puts("");
+    printf("Mark and sweep... %p\n", global_environment);
+    mark_and_sweep();
+    puts("Done.");
+    destroy_env(global_environment);
     return 0;
 }
