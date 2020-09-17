@@ -4,6 +4,8 @@ Looking back, it has a fun way of parsing code and making an S-expression tree i
 
 It's 2020 as I write this, so maybe if I let it sit on GitHub for five more years, by 2025 I'll have figured out how to implement garbage collection.
 
+**EDIT**: psych, I implemented mark-and-sweep, maybe
+
 # Usage
 
 ```
