@@ -5,7 +5,6 @@
 #include "value.h"
 
 Environment *make_env(Environment *parent) {
-    puts("make_env");
     Environment *env = malloc(sizeof(Environment));
     env->entries = 0;
     env->size = 8;
@@ -15,11 +14,8 @@ Environment *make_env(Environment *parent) {
 }
 
 Value *get_env(Environment *env, char *key) {
-    puts("get_env");
-    puts(key);
     assert(env != NULL);
     assert(key != NULL);
-
     int i;
     for (i = 0; i < env->entries; i++) {
         if (!strcmp(key, env->table[i].key))
@@ -54,7 +50,6 @@ void set_env(Environment *env, char *key, Value *value) {
 }
 
 void define_env(Environment *env, char *key, Value *value) {
-    printf("defining %s\n", key);
     assert(env != NULL);
     assert(key != NULL);
     assert(value != NULL);
@@ -64,7 +59,6 @@ void define_env(Environment *env, char *key, Value *value) {
         exit(1);
     }
 
-    puts("defined");
     env->table[env->entries].key = key;
     env->table[env->entries].value = value;
     env->entries++;

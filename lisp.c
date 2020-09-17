@@ -38,14 +38,22 @@ Value *builtin_cons(Value *args) {
     return make_pair(car(args), car(cdr(args)));
 }
 
+Value *builtin_plus(Value *args) {
+    double sum = 0.0;
+    while (!pair_is_nil(args)) {
+        assert(car(args)->t == NUMBER);
+        sum += car(args)->v.number_value;
+        args = cdr(args);
+    }
+    return make_number(sum);
+}
+
 Environment *make_global_env() {
-    puts("make_global_env");
     Environment *e = make_env(NULL);
-    puts("done! adding:");
     define_env(e, "car", make_builtin(builtin_car));
     define_env(e, "cdr", make_builtin(builtin_cdr));
     define_env(e, "cons", make_builtin(builtin_cons));
-    puts("done.");
+    define_env(e, "+", make_builtin(builtin_plus));
     return e;
 }
 
@@ -66,9 +74,6 @@ Environment *lambda_env(Lambda *f, Value *args, Environment *parent) {
 Value *map_eval(Value *exp, Environment *env);
 
 Value *eval(Value *exp, Environment *env) {
-    puts("Evaluating");
-    print_value(exp, true); puts("");
-
     char *s;
     Value *f, *tail;
 
@@ -102,8 +107,8 @@ Value *eval(Value *exp, Environment *env) {
                 return eval(f->v.lambda_value->body,
                             lambda_env(f->v.lambda_value, tail, env));
             } else {
-                puts("Tried to call non-function:");
-                print_value(f, true);
+                printf("Tried to call non-function: ");
+                print_value(f, true); puts("");
                 exit(1);
             }
         }
@@ -124,10 +129,8 @@ Value *map_eval(Value *exp, Environment *env) {
 int main(int argc, char **argv) {
     init_heap();
     Environment *global = make_global_env();
-    puts("ok");
-    //Value *code = parse_value("((lambda (x) (cons x x)) 1)", NULL);
-    Value *code = parse_value("((a b))", NULL);
-    puts("parsed");
+    Value *code = parse_value("((lambda (x) (+ x x)) 5)", NULL);
+    // Value *code = parse_value("((1 2))", NULL);
     print_value(code, true); puts("");
     print_value(eval(code, global), true); puts("");
     destroy_heap();

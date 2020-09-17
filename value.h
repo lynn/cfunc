@@ -22,7 +22,7 @@ struct Value {
     Type t;
     union {
         bool bool_value;  // #t or #f
-        float number_value;
+        double number_value;
         char *symbol_value;
         Pair *pair_value;  // NULL == #nil
         Lambda *lambda_value;

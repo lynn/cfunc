@@ -5,6 +5,7 @@
 #include <string.h>
 #include "value.h"
 #include "parse.h"
+#include "show.h"
 
 #define HEAP_SIZE 100000
 
@@ -65,10 +66,6 @@ Value *make_string(char *s) {
 }
 
 Value *make_pair(Value *fst, Value *snd) {
-    puts("making pair");
-    print_value(fst);puts("");
-    print_value(snd);puts("");
-    
     Pair *pair = allocate(sizeof(Pair));
     pair->fst = fst; pair->snd = snd;
     Value *val = new_value();
@@ -77,7 +74,6 @@ Value *make_pair(Value *fst, Value *snd) {
 }
 
 Value *make_lambda(Value *arguments, Value *body, Environment *env) {
-    puts("making lambda!");
     Lambda *lambda = allocate(sizeof(Lambda));
     lambda->arguments = arguments;
     lambda->body = body;
@@ -88,9 +84,7 @@ Value *make_lambda(Value *arguments, Value *body, Environment *env) {
 }
 
 Value *make_builtin(Value *(*func)(Value *)) {
-    puts("hi making builtin");
     Value *val = new_value();
     val->t = BUILTIN; val->v.builtin_value = func;
-    puts("done");
     return val;
 }

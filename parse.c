@@ -33,13 +33,15 @@ char *next_token(char *s) {
     }
 }
 
+/**
+ * Parse an S-expression pair, and optionally report where it ends.
+ * (If end != NULL, we store the "end of this pair" char-pointer in *end.)
+ *
+ */
 Value *parse_pair(char *s, char **end) {
     /* We are *inside* a (, so: */
-    printf("parse_pair: [%s]\n", s);
     Value *fst = parse_value(s, &s);
-    printf("after fst:  [%s]\n", s);
     char *s2 = next_token(s);
-    printf("            [%s] [%s]\n", token, s2);
 
     if (!strcmp(token, ".")) {
         /* Read "fst . snd)" */
@@ -53,20 +55,16 @@ Value *parse_pair(char *s, char **end) {
         /* Read "fst)" */
         if (end != NULL)
             *end = s2;
-        puts("Found end of s-exp.");
         return make_pair(fst, make_nil());
     } else {
         /* Read "fst snd ...)" */
-        puts("Reading rest of s-exp...");
-        return make_pair(fst, parse_pair(s, &end));
+        return make_pair(fst, parse_pair(s, end));
     }
 }
 
 Value *parse_value(char *s, char **end) {
-    printf("parse_value: [%s]\n", s);
     s = next_token(s);
     if (!strcmp(token, "(")) {
-        printf("This is a pair!\n");
         return parse_pair(s, end);
     }
     if (end != NULL)
