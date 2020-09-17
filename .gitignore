@@ -1,0 +1,9 @@
+cfunc
+*.exe
+*.exe.stackdump
+*.sln
+*.sdf
+*.suo
+Debug
+*.vcxproj*
+*~
