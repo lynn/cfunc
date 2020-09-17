@@ -10,5 +10,5 @@ It's 2020 as I write this, so maybe if I let it sit on GitHub for five more year
 
 ```
 make
-./cfunc "(begin (define fac (lambda (x) (if (= x 0) 1 (* x (fac (- x 1)))))) (fac 7))"
+./cfunc examples/map.lisp
 ```
