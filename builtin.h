@@ -130,10 +130,3 @@ Value *builtin_string_index(Value *args) {
     size_t i = (size_t)car(cdr(args))->v.number_value;
     return make_number((double)s[i]);
 }
-
-Value *builtin_string_index(Value *args) {
-    assert(car(args)->t == STRING);
-    char *s = car(args)->v.symbol_value;
-    size_t i = (size_t)car(cdr(args))->v.number_value;
-    return make_number((double)s[i]);
-}

@@ -12,7 +12,10 @@ char *next_token(char *s) {
     if (*s == '\0')
         return NULL;
 
-    while (isspace(*s)) s++;
+    while (isspace(*s) || *s == ';') {
+        if (*s == ';') while (*s != '\n') s++;
+        s++;
+    }
     if (*s == '(' || *s == ')') {
         token[0] = *s++;
         token[1] = '\0';
@@ -34,9 +37,9 @@ char *next_token(char *s) {
 }
 
 /**
- * Parse an S-expression pair, and optionally report where it ends.
+ * Parse "inside" an S-expression (, and optionally report where it ends.
  * Caveat: to parse "(a b)", `s` should be a pointer to 'a', not '('.
- * (If end != NULL, we store the "end of this pair" char-pointer in *end.)
+ * (If end != NULL, we store the "position after )" char-pointer in *end.)
  */
 Value *parse_pair(char *s, char **end) {
     /* We are *inside* a (, so: */
