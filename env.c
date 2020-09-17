@@ -64,7 +64,7 @@ void define_env(Environment *env, char *key, Value *value) {
     env->entries++;
     if (env->entries >= env->size) {
         env->size *= 2;
-        env->table = (Entry *) realloc(env, sizeof(Entry) * env->size);
+        env->table = (Entry *) realloc(env->table, sizeof(Entry) * env->size);
     }
 }
 

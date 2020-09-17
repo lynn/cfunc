@@ -7,7 +7,7 @@
 #include "parse.h"
 #include "show.h"
 
-#define HEAP_SIZE 100000
+const size_t HEAP_SIZE = 1000000;
 
 void *heap;
 int alloc_index;
@@ -25,6 +25,7 @@ void *allocate(int bytes) {
     void *result = heap + alloc_index;
     alloc_index += bytes;
     assert(alloc_index < HEAP_SIZE);
+    // printf("%d\n", alloc_index);
     return result;
 }
 
