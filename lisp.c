@@ -33,6 +33,15 @@ Value *builtin_cons(Value *args) {
     return make_pair(car(args), car(cdr(args)));
 }
 
+Value *builtin_is_nil(Value *args) {
+    Value *x = car(args);
+    return make_bool(x->t == PAIR && x->v.pair_value == NULL);
+}
+
+Value *builtin_list(Value *args) {
+    return args;
+}
+
 Value *builtin_plus(Value *args) {
     double sum = 0.0;
     while (!is_nil(args)) {
@@ -92,6 +101,8 @@ Environment *make_global_env() {
     define_env(e, "car", make_builtin(builtin_car));
     define_env(e, "cdr", make_builtin(builtin_cdr));
     define_env(e, "cons", make_builtin(builtin_cons));
+    define_env(e, "nil?", make_builtin(builtin_is_nil));
+    define_env(e, "list", make_builtin(builtin_list));
     define_env(e, "+", make_builtin(builtin_plus));
     define_env(e, "-", make_builtin(builtin_minus));
     define_env(e, "*", make_builtin(builtin_times));
@@ -179,9 +190,15 @@ Value *map_eval(Value *exp, Environment *env) {
 
 int main(int argc, char **argv) {
     global_environment = make_global_env();
-    // Value *code = parse_value("((lambda (x) (+ x x)) 5)", NULL);
-    // Value *code = parse_value("(begin (define fac (lambda (x) (if (= x 0) 1 (* x (fac (+ x -1)))))) (fac 7))", NULL);
-    Value *code = parse_value(argv[1], NULL);
+    char *buffer = 0;
+    long length;
+    FILE *f = fopen(argv[1], "rb"); if (!f) exit(1);
+    fseek(f, 0, SEEK_END); length = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    buffer = malloc(length); if (!buffer) exit(1);
+    fread(buffer, 1, length, f);
+    fclose(f);
+    Value *code = parse_value(buffer, NULL);
     print_value(code, true); puts("");
     print_value(eval(code, global_environment), true); puts("");
     printf("Mark and sweep... %p\n", global_environment);

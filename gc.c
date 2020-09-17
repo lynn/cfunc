@@ -6,10 +6,11 @@
 #include "env.h"
 
 size_t allocated = 0;
+bool debug_gc = false;
 
 void mark_env(Environment *env, int depth);
 void mark_value(Value *val, int depth) {
-    printf("%*s ", 2*depth+1, "*"); print_value(val, true); puts("");
+    if (debug_gc) { printf("%*s ", 2*depth+1, "*"); print_value(val, true); puts(""); }
     assert(val != NULL);
     if (val->marked) return;
     val->marked = true;
@@ -35,11 +36,10 @@ void mark_value(Value *val, int depth) {
 }
 
 void mark_env(Environment *env, int depth) {
-    printf("%*s %s %p\n", 2*depth+1, "*", "Environment", env);
+    if (debug_gc) { printf("%*s %s %p\n", 2*depth+1, "*", "Environment", env); }
     if (env->marked) return;
     env->marked = true;
     for (int i = 0; i < env->entries; i++) {
-        printf("%d\n", i);
         mark_value(env->table[i].value, depth + 1);
     }
 }
@@ -77,9 +77,8 @@ void sweep() {
 }
 
 void mark_and_sweep() {
-    printf("Now %p\n", global_environment);
     mark_env(global_environment, 0);
-    print_heap();
+    if (debug_gc) print_heap();
     sweep();
-    print_heap();
+    if (debug_gc) print_heap();
 }

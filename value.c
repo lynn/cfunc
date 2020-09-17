@@ -29,7 +29,7 @@ Value *new_value() {
     if (heap_index > max_heap_index)
         max_heap_index = heap_index;
     heap_values++;
-    printf("%d\n", heap_values);
+    // printf("%d\n", heap_values);
     if (heap_values >= 50000) {
         mark_and_sweep();
     }
