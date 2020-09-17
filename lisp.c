@@ -129,7 +129,6 @@ Value *eval(Value *exp, Environment *env) {
         } else if (IS_KEYWORD(f, "lambda")) {
             return make_lambda(car(tail), car(cdr(tail)), env);
         } else if (IS_KEYWORD(f, "define")) {
-            print_value(car(tail), true); puts("");
             Value *val = eval(car(cdr(tail)), env);
             define_env(env, car(tail)->v.symbol_value, val);
             return make_nil();
@@ -166,7 +165,8 @@ int main(int argc, char **argv) {
     init_heap();
     Environment *global = make_global_env();
     // Value *code = parse_value("((lambda (x) (+ x x)) 5)", NULL);
-    Value *code = parse_value("(begin (define fac (lambda (x) (if (= x 0) 1 (* x (fac (+ x -1)))))) (fac 7))", NULL);
+    // Value *code = parse_value("(begin (define fac (lambda (x) (if (= x 0) 1 (* x (fac (+ x -1)))))) (fac 7))", NULL);
+    Value *code = parse_value(argv[1], NULL);
     print_value(code, true); puts("");
     print_value(eval(code, global), true); puts("");
     destroy_heap();
