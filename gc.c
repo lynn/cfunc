@@ -64,6 +64,7 @@ void sweep() {
         if (heap[i] == NULL) continue;
         if (heap[i]->marked) {
             if (i > max_marked) max_marked = i;
+            heap[i]->marked = false;
         } else {
             // bye bye
             free_value(heap[i]);
